@@ -1,5 +1,10 @@
 # Coversheets for EPrints
-#### [EPrints wiki page](http://wiki.eprints.org/w/Coversheets)
+
+The purpose of the Coversheets is to add a front and/or back covering page to a PDF document uploaded to an EPrints repository. 
+
+Coversheets work by using a user-defined Apache OpenOffice coversheet template uploaded to your EPrints repository. This template is then populated with the predefined attributes for the particular EPrint, before being attached to the front (or if specified, back) of any PDF documents uploaded for that EPrint.
+
+See [EPrints wiki page](http://wiki.eprints.org/w/Coversheets) to discover how to configure the module.
 
 ## Installation
 In order to install from https://github.com/eprintsug/coversheets/ you must have [gitaar](https://github.com/eprintsug/gitaar) up and running on your EPrints.
