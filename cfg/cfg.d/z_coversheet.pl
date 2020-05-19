@@ -23,8 +23,13 @@ $c->{coversheet}->{path_suffix} = '/coversheets';
 $c->{coversheet}->{path} = $c->{archiveroot}.'/cfg/static/coversheets';
 $c->{coversheet}->{url} = $c->{base_url}.'/coversheets';
 
-# Ghostscript command to stitch the pdfs
-$c->{gs_pdf_stich_cmd} = "gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=";
+# a choice of stitching tools are gs can cause color space issues
+# e.g. eprints.lse.ac.uk/101091
+$c->{pdf_stitching_tool} = 'qpdf'
+# Ghostscript command to stitch the pdfs if tool is gs
+$c->{gs_pdf_stitch_cmd} = "gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=";
+# qpdf commands to stitch the pdfs if tool is qpdf
+$c->{qpdf_pdf_stitch_cmd} = "qpdf --empty --pages"
 
 # Fields used for applying coversheets
 $c->{license_application_fields} = [ "type" ];

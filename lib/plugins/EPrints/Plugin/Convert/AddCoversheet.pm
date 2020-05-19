@@ -78,12 +78,12 @@ sub can_convert
 
         # Get the main file name
         my $fn = $doc->get_main() or return ();
-        
+
         if( $fn =~ /\.($EXTENSIONS_RE)$/oi )
         {
         	$types{"coverpage"} = { plugin => $plugin, };
         }
-        
+
 	return %types;
 }
 
@@ -110,7 +110,7 @@ sub prepare_pages
 				EPrints::Utils::chown_for_eprints( "$temp_dir/$coversheet_page.odt" );
 
 				my $oodoc = OpenOffice::OODoc::odfDocument(file => "$temp_dir/$coversheet_page.odt");
-				
+
 				$self->{tags} = $self->{session}->config( 'coversheet', 'tags' );
 				foreach my $tag (keys %{$self->{tags}})
 				{
@@ -167,7 +167,7 @@ sub export
 
 	my $pages = $plugin->{_pages};
 	return unless( defined $pages );
-	
+
 	my $repository = $plugin->get_repository;
 
 	# need Ghostscript and python
@@ -211,17 +211,35 @@ sub export
 	my $temp_output_dir = File::Temp->newdir( "ep-coversheet-finishedXXXX", TMPDIR => 1 );
 	my $temp_output_file = $temp_dir.'/temp.pdf';
 
-	# EPrints Services/pjw Modification to use Ghostscript rather than pdftk 
-	my $gs_cmd = $plugin->get_repository->get_conf( "gs_pdf_stich_cmd" );
-	# add the output file
-	$gs_cmd .= $temp_output_file;
-	# add the input files
-	foreach my $input_file (@input_files)
-	{
-		$gs_cmd .= " '$input_file'";
+	# stitch the pdfs together with a tool (pdftk used to be supported)
+	my $stitching_tool = $plugin->get_repository->get_conf( "pdf_stitching_tool" );
+
+	my $stitching_cmd = '';
+	if ($pdf_stitching_tool eq 'gs') {
+		# EPrints Services/pjw Modification to use Ghostscript
+		$stitching_cmd = $plugin->get_repository->get_conf( "gs_pdf_stitch_cmd" );
+		# add the output file
+		$stitching_cmd .= $temp_output_file;
+		# add the input files
+		foreach my $input_file (@input_files)
+		{
+			$stitching_cmd .= " '$input_file'";
+		}
+	} elsif ($pdf_stitching_tool eq 'qpdf') {
+		$stitching_cmd = $plugin->get_repository->get_conf( "qpdf_pdf_stitch_cmd" );
+		# add the input files
+		foreach my $input_file (@input_files)
+		{
+			$stitching_cmd .= " '$input_file'";
+		}
+		# add the output file
+		$stitching_cmd .= " -- $temp_output_file";
+	} else {
+		$repository->log( "[Convert::AddCoversheet] unsupported pdf_stitchingtool." );
+        return;
 	}
 
-	my $sys_call_status = system($gs_cmd);
+	my $sys_call_status = system($stitching_cmd);
 	# check it worked
 	if (0 == $sys_call_status)
 	{
@@ -230,12 +248,12 @@ sub export
 	else
         {
 		my $eprint = $doc->get_eprint;
-#               	$repository->mail_administrator( 'Plugin/Screen/Coversheet:email_subject', 
-#                                                 'Plugin/Screen/Coversheet:email_body', 
+#               	$repository->mail_administrator( 'Plugin/Screen/Coversheet:email_subject',
+#                                                 'Plugin/Screen/Coversheet:email_body',
 #                                                 eprintid => $eprint->render_value("eprintid"),
 #                                                 docid => $doc->render_value("docid") );
 
-                $repository->log("[Convert::AddCoversheet] Ghostscript could not create '$output_file'. Check the PDF is not password-protected.");
+                $repository->log("[Convert::AddCoversheet] Stitching PDFs could not create '$output_file'. perhaps the PDF is password-protected.");
                 return;
         }
 
