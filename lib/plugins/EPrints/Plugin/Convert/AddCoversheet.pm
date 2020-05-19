@@ -215,7 +215,7 @@ sub export
 	my $stitching_tool = $plugin->get_repository->get_conf( "pdf_stitching_tool" );
 
 	my $stitching_cmd = '';
-	if ($pdf_stitching_tool eq 'gs') {
+	if ($stitching_tool eq 'gs') {
 		# EPrints Services/pjw Modification to use Ghostscript
 		$stitching_cmd = $plugin->get_repository->get_conf( "gs_pdf_stitch_cmd" );
 		# add the output file
@@ -225,7 +225,7 @@ sub export
 		{
 			$stitching_cmd .= " '$input_file'";
 		}
-	} elsif ($pdf_stitching_tool eq 'qpdf') {
+	} elsif ($stitching_tool eq 'qpdf') {
 		$stitching_cmd = $plugin->get_repository->get_conf( "qpdf_pdf_stitch_cmd" );
 		# add the input files
 		foreach my $input_file (@input_files)
@@ -235,7 +235,7 @@ sub export
 		# add the output file
 		$stitching_cmd .= " -- $temp_output_file";
 	} else {
-		$repository->log( "[Convert::AddCoversheet] unsupported pdf_stitchingtool." );
+		$repository->log( "[Convert::AddCoversheet] unsupported pdf_stitching_tool." );
         return;
 	}
 
